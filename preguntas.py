@@ -1,167 +1,149 @@
 """
-Regresión Lineal Multiple
+Regresión Lineal Univariada
 -----------------------------------------------------------------------------------------
 
-En este laboratorio se entrenara un modelo de regresión lineal multiple que incluye la 
-selección de las n variables más relevantes usando una prueba f.
+En este laboratio se construirá un modelo de regresión lineal univariado.
 
 """
-# pylint: disable=invalid-name
-# pylint: disable=unsubscriptable-object
-
+import numpy as np
 import pandas as pd
 
 
 def pregunta_01():
     """
-    Carga de datos.
-    -------------------------------------------------------------------------------------
+    En este punto se realiza la lectura de conjuntos de datos.
+    Complete el código presentado a continuación.
     """
-    # Lea el archivo `insurance.csv` y asignelo al DataFrame `df`
-    df = ____
+    # Lea el archivo `gm_2008_region.csv` y asignelo al DataFrame `df`
+    df = pd.read_csv("gm_2008_region.csv")
 
-    # Asigne la columna `charges` a la variable `y`.
-    ____ = ____
+    # Asigne la columna "life" a `y` y la columna "fertility" a `X`
+    y = np.array(df["life"])
+    X = np.array(df["fertility"])
 
-    # Asigne una copia del dataframe `df` a la variable `X`.
-    ____ = ____.____(____)
+    # Imprima las dimensiones de `y`
+    print(y.shape)
 
-    # Remueva la columna `charges` del DataFrame `X`.
-    ____.____(____)
+    # Imprima las dimensiones de `X`
+    print(X.shape)
 
-    # Retorne `X` y `y`
-    return X, y
+    # Transforme `y` a un array de numpy usando reshape
+    y_reshaped = y.reshape(len(y), 1)
+
+    # Trasforme `X` a un array de numpy usando reshape
+    X_reshaped = X.reshape(len(X), 1)
+
+    # Imprima las nuevas dimensiones de `y`
+    print(y_reshaped.shape)
+
+    # Imprima las nuevas dimensiones de `X`
+    print(X_reshaped.shape)
 
 
 def pregunta_02():
     """
-    Preparación de los conjuntos de datos.
-    -------------------------------------------------------------------------------------
+    En este punto se realiza la impresión de algunas estadísticas básicas
+    Complete el código presentado a continuación.
     """
 
-    # Importe train_test_split
-    from ____ import ____
+    # Lea el archivo `gm_2008_region.csv` y asignelo al DataFrame `df`
+    df = pd.read_csv("gm_2008_region.csv")
 
-    # Cargue los datos y asigne los resultados a `X` y `y`.
-    X, y = pregunta_01()
+    # Imprima las dimensiones del DataFrame
+    print(df.shape)
 
-    # Divida los datos de entrenamiento y prueba. La semilla del generador de números
-    # aleatorios es 12345. Use 300 patrones para la muestra de prueba.
-    (X_train, X_test, y_train, y_test,) = ____(
-        ____,
-        ____,
-        test_size=____,
-        random_state=____,
-    )
+    # Imprima la correlación entre las columnas `life` y `fertility` con 4 decimales.
+    print(round(df["life"].corr(df["fertility"]),4))
 
-    # Retorne `X_train`, `X_test`, `y_train` y `y_test`
-    return X_train, X_test, y_train, y_test
+    # Imprima la media de la columna `life` con 4 decimales.
+    print(round(df["life"].mean(),4))
+
+    # Imprima el tipo de dato de la columna `fertility`.
+    print(type(df["fertility"]))
+
+    # Imprima la correlación entre las columnas `GDP` y `life` con 4 decimales.
+    print(round(df["GDP"].corr(df["life"]),4))
 
 
 def pregunta_03():
     """
-    Especificación del pipeline y entrenamiento
-    -------------------------------------------------------------------------------------
+    Entrenamiento del modelo sobre todo el conjunto de datos.
+    Complete el código presentado a continuación.
     """
 
-    # Importe make_column_selector
-    # Importe make_column_transformer
-    # Importe SelectKBest
-    # Importe f_regression
+    # Lea el archivo `gm_2008_region.csv` y asignelo al DataFrame `df`
+    df = pd.read_csv("gm_2008_region.csv")
+
+    # Asigne a la variable los valores de la columna `fertility`
+    X_fertility = np.array(df["fertility"]).reshape(len(df["fertility"]),1)
+
+    # Asigne a la variable los valores de la columna `life`
+    y_life = np.array(df["life"]).reshape(len(df["life"]),1)
+
     # Importe LinearRegression
-    # Importe GridSearchCV
-    # Importe Pipeline
-    # Importe OneHotEncoder
-    from ____ import ____
+    from sklearn.linear_model import LinearRegression
 
-    pipeline = ____(
-        steps=[
-            # Paso 1: Construya un column_transformer que aplica OneHotEncoder a las
-            # variables categóricas, y no aplica ninguna transformación al resto de
-            # las variables.
-            (
-                "column_transfomer",
-                ____(
-                    (
-                        ____(),
-                        ____(____=____),
-                    ),
-                    remainder=____,
-                ),
-            ),
-            # Paso 2: Construya un selector de características que seleccione las K
-            # características más importantes. Utilice la función f_regression.
-            (
-                "selectKBest",
-                ____(____=____),
-            ),
-            # Paso 3: Construya un modelo de regresión lineal.
-            (
-                "____",
-                ____(____),
-            ),
-        ],
-    )
+    # Cree una instancia del modelo de regresión lineal
+    reg = LinearRegression()
 
-    # Cargua de las variables.
-    X_train, _, y_train, _ = pregunta_02()
+    # Cree El espacio de predicción. Esto es, use linspace para crear
+    # un vector con valores entre el máximo y el mínimo de X_fertility
+    prediction_space = np.linspace(
+        min(X_fertility),
+        max(X_fertility),
+    ).reshape(50, 1)
 
-    # Defina un diccionario de parámetros para el GridSearchCV. Se deben
-    # considerar valores desde 1 hasta 11 regresores para el modelo
-    param_grid = {
-        ____: ____(____, ____),
-    }
+    # Entrene el modelo usando X_fertility y y_life
+    reg.fit(X_fertility, y_life)
 
-    # Defina una instancia de GridSearchCV con el pipeline y el diccionario de
-    # parámetros. Use cv = 5, y como métrica de evaluación el valor negativo del
-    # error cuadrático medio.
-    gridSearchCV = ____(
-        estimator=____,
-        param_grid=____,
-        cv=____,
-        scoring=____,
-        refit=____,
-        return_train_score=____,
-    )
+    # Compute las predicciones para el espacio de predicción
+    y_pred = reg.predict(prediction_space)
 
-    # Búsque la mejor combinación de regresores
-    gridSearchCV.fit(X_train, y_train)
-
-    # Retorne el mejor modelo
-    return gridSearchCV
+    # Imprima el R^2 del modelo con 4 decimales
+    print(reg.score(X_fertility, y_life).round(4))
 
 
 def pregunta_04():
     """
-    Evaluación del modelo
-    -------------------------------------------------------------------------------------
+    Particionamiento del conjunto de datos usando train_test_split.
+    Complete el código presentado a continuación.
     """
 
+    # Importe LinearRegression
+    # Importe train_test_split
     # Importe mean_squared_error
-    from ____ import ____
+    from sklearn.linear_model import LinearRegression
+    from sklearn.model_selection import train_test_split
+    from sklearn.metrics import mean_squared_error
 
-    # Obtenga el pipeline optimo de la pregunta 3.
-    gridSearchCV = pregunta_03()
+    # Lea el archivo `gm_2008_region.csv` y asignelo al DataFrame `df`
+    df = pd.read_csv("gm_2008_region.csv")
 
-    # Cargue las variables.
-    X_train, X_test, y_train, y_test = pregunta_02()
+    # Asigne a la variable los valores de la columna `fertility`
+    X_fertility = np.array(df["fertility"]).reshape(len(df["fertility"]),1)
 
-    # Evalúe el modelo con los conjuntos de entrenamiento y prueba.
-    y_train_pred = ____.____(____)
-    y_test_pred = ____.____(____)
+    # Asigne a la variable los valores de la columna `life`
+    y_life = np.array(df["life"]).reshape(len(df["life"]),1)
 
-    # Compute el error cuadratico medio de entrenamiento y prueba. Redondee los
-    # valores a dos decimales.
+    # Divida los datos de entrenamiento y prueba. La semilla del generador de números
+    # aleatorios es 53. El tamaño de la muestra de entrenamiento es del 80%
+    (X_train, X_test, y_train, y_test,) = train_test_split(
+        X_fertility,
+        y_life,
+        test_size=0.2,
+        random_state=53,
+    )
 
-    mse_train = ____(
-        _____,
-        _____,
-    ).round(2)
+    # Cree una instancia del modelo de regresión lineal
+    linearRegression = LinearRegression()
 
-    mse_test = ____(
-        _____,
-        _____,
-    ).round(2)
+    # Entrene el clasificador usando X_train y y_train
+    linearRegression.fit(X_train, y_train)
 
-    # Retorne el error cuadrático medio para entrenamiento y prueba
-    return mse_train, mse_test
+    # Pronostique y_test usando X_test
+    y_pred = linearRegression.predict(X_test)
+
+    # Compute and print R^2 and RMSE
+    print("R^2: {:6.4f}".format(linearRegression.score(X_test, y_test)))
+    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+    print("Root Mean Squared Error: {:6.4f}".format(rmse))
